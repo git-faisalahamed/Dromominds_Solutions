@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight, User } from 'lucide-react';
+import { sanityClient } from '../lib/sanity';
 
 export const CaseStudies = () => {
-  const caseStudies = [
+  const localCaseStudies = [
     {
       title: "Laboratory System Validation",
       challenge: "A top-tier CRO needed to rapidly validate a multi-site global LIMS deployment across 4 continents within 6 months.",
@@ -30,6 +31,16 @@ export const CaseStudies = () => {
     }
   ];
 
+  const [caseStudies, setCaseStudies] = useState<any[]>(localCaseStudies);
+
+  useEffect(() => {
+    sanityClient.fetch(`*[_type == "caseStudy"] | order(_createdAt desc)`).then(data => {
+      if (data && data.length > 0) {
+        setCaseStudies(data);
+      }
+    }).catch(console.error);
+  }, []);
+
   return (
     <section className="py-10 lg:py-24 bg-white dark:bg-slate-950 border-t border-gray-100 dark:border-slate-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -41,7 +52,7 @@ export const CaseStudies = () => {
           </p>
         </div>
 
-        <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-6 pb-4 md:grid md:grid-cols-2 md:overflow-visible">
+        <div className="flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-4 md:gap-6 pb-4 md:grid md:grid-cols-2 md:overflow-visible">
           {caseStudies.map((cs, i) => (
              <motion.div 
                key={i} 
@@ -68,6 +79,20 @@ export const CaseStudies = () => {
                    </div>
                    <p className="text-gray-900 dark:text-emerald-100 font-medium leading-relaxed">{cs.outcome}</p>
                  </div>
+
+                 {cs.author && (
+                   <div className="pt-4 mt-6 border-t border-gray-200 dark:border-slate-800 flex items-center gap-3">
+                     <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+                       <User className="w-4 h-4" />
+                     </div>
+                     <div>
+                       <div className="text-sm font-bold text-gray-900 dark:text-white">{cs.author}</div>
+                       {cs.authorType && (
+                         <div className="text-xs font-medium text-[var(--color-brand)] uppercase tracking-wider">{cs.authorType}</div>
+                       )}
+                     </div>
+                   </div>
+                 )}
                </div>
              </motion.div>
           ))}

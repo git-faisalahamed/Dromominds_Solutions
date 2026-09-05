@@ -15,7 +15,7 @@ export const FloatingContactButtons = () => {
   const message = encodeURIComponent("Hi, I would like to know more about your compliance and validation services.");
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
 
-  const linkedInUrl = settings?.socialLinks?.linkedin || "https://www.linkedin.com/company/dromominds/";
+  const linkedInUrl = settings?.socialLinks?.linkedin || "https://www.linkedin.com/company/dromominds-solutions/";
 
   return (
     <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[90] flex flex-col gap-3 sm:gap-4">

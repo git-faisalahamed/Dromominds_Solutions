@@ -6,47 +6,46 @@ import { AnimatedCounter } from './AnimatedCounter';
 
 const regions = [
   { id: 'all', label: 'Global Alliance' },
-  { id: 'na', label: 'North America' },
-  { id: 'eu', label: 'Europe' },
-  { id: 'me', label: 'Middle East' },
+  { id: 'na', label: 'North/South America' },
+  { id: 'eu', label: 'Europe/Middle-east' },
   { id: 'asia', label: 'Asia Pacific' },
 ];
 
 const fallbackClients = [
   // Original
-  { id: '1', region: 'na', name: 'Apex Clinical', icon: Activity, color: 'text-rose-600', link: '#' },
-  { id: '2', region: 'na', name: 'GeneSys Solutions', icon: Dna, color: 'text-indigo-600', link: '#' },
-  { id: '3', region: 'na', name: 'NovaLife Health', icon: Shield, color: 'text-emerald-600', link: '#' },
-  { id: '4', region: 'eu', name: 'EuroPharma Ltd', icon: Hexagon, color: 'text-blue-600', link: '#' },
-  { id: '5', region: 'eu', name: 'BioNordic', icon: Snowflake, color: 'text-cyan-600', link: '#' },
-  { id: '6', region: 'eu', name: 'MediGene', icon: Microscope, color: 'text-fuchsia-600', link: '#' },
-  { id: '7', region: 'me', name: 'Oasis Medical', icon: Droplets, color: 'text-amber-600', link: '#' },
-  { id: '8', region: 'me', name: 'MENA Biotech', icon: Leaf, color: 'text-green-600', link: '#' },
-  { id: '9', region: 'me', name: 'Gulf Diagnostics', icon: Zap, color: 'text-yellow-600', link: '#' },
-  { id: '10', region: 'asia', name: 'Sakura Bio', icon: FlaskConical, color: 'text-pink-600', link: '#' },
-  { id: '11', region: 'asia', name: 'TechPharma', icon: Globe, color: 'text-violet-600', link: '#' },
-  { id: '12', region: 'asia', name: 'Pacific Health', icon: Orbit, color: 'text-teal-600', link: '#' },
+  { id: '1', region: 'na', name: 'Apex Clinical', icon: Activity, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '2', region: 'na', name: 'GeneSys Solutions', icon: Dna, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '3', region: 'na', name: 'NovaLife Health', icon: Shield, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '4', region: 'eu', name: 'EuroPharma Ltd', icon: Hexagon, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '5', region: 'eu', name: 'BioNordic', icon: Snowflake, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '6', region: 'eu', name: 'MediGene', icon: Microscope, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '7', region: 'eu', name: 'Oasis Medical', icon: Droplets, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '8', region: 'eu', name: 'MENA Biotech', icon: Leaf, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '9', region: 'eu', name: 'Gulf Diagnostics', icon: Zap, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '10', region: 'asia', name: 'Sakura Bio', icon: FlaskConical, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '11', region: 'asia', name: 'TechPharma', icon: Globe, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '12', region: 'asia', name: 'Pacific Health', icon: Orbit, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
   
   // Expanded for density
-  { id: '13', region: 'na', name: 'Vanguard Dx', icon: Activity, color: 'text-rose-600', link: '#' },
-  { id: '14', region: 'na', name: 'Helix Systems', icon: Dna, color: 'text-indigo-600', link: '#' },
-  { id: '15', region: 'na', name: 'Aegis Bio', icon: Shield, color: 'text-emerald-600', link: '#' },
-  { id: '16', region: 'eu', name: 'AlpinMed', icon: Hexagon, color: 'text-blue-600', link: '#' },
-  { id: '17', region: 'eu', name: 'CryoTech EU', icon: Snowflake, color: 'text-cyan-600', link: '#' },
-  { id: '18', region: 'eu', name: 'Lumen Labs', icon: Microscope, color: 'text-fuchsia-600', link: '#' },
-  { id: '19', region: 'me', name: 'Desert Bio', icon: Droplets, color: 'text-amber-600', link: '#' },
-  { id: '20', region: 'me', name: 'Cedar Pharm', icon: Leaf, color: 'text-green-600', link: '#' },
-  { id: '21', region: 'me', name: 'Dune Health', icon: Zap, color: 'text-yellow-600', link: '#' },
-  { id: '22', region: 'asia', name: 'Lotus Life', icon: FlaskConical, color: 'text-pink-600', link: '#' },
-  { id: '23', region: 'asia', name: 'Oriental Rx', icon: Globe, color: 'text-violet-600', link: '#' },
-  { id: '24', region: 'asia', name: 'Aussie Bio', icon: Orbit, color: 'text-teal-600', link: '#' },
+  { id: '13', region: 'na', name: 'Vanguard Dx', icon: Activity, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '14', region: 'na', name: 'Helix Systems', icon: Dna, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '15', region: 'na', name: 'Aegis Bio', icon: Shield, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '16', region: 'eu', name: 'AlpinMed', icon: Hexagon, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '17', region: 'eu', name: 'CryoTech EU', icon: Snowflake, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '18', region: 'eu', name: 'Lumen Labs', icon: Microscope, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '19', region: 'eu', name: 'Desert Bio', icon: Droplets, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '20', region: 'eu', name: 'Cedar Pharm', icon: Leaf, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '21', region: 'eu', name: 'Dune Health', icon: Zap, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '22', region: 'asia', name: 'Lotus Life', icon: FlaskConical, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '23', region: 'asia', name: 'Oriental Rx', icon: Globe, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '24', region: 'asia', name: 'Aussie Bio', icon: Orbit, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
 
-  { id: '25', region: 'na', name: 'Beacon Care', icon: Activity, color: 'text-rose-600', link: '#' },
-  { id: '26', region: 'na', name: 'Synapse Inc', icon: Dna, color: 'text-indigo-600', link: '#' },
-  { id: '27', region: 'na', name: 'Fortress Rx', icon: Shield, color: 'text-emerald-600', link: '#' },
-  { id: '28', region: 'eu', name: 'Nordic Health', icon: Hexagon, color: 'text-blue-600', link: '#' },
-  { id: '29', region: 'eu', name: 'Arctic Bio', icon: Snowflake, color: 'text-cyan-600', link: '#' },
-  { id: '30', region: 'eu', name: 'Optima Labs', icon: Microscope, color: 'text-fuchsia-600', link: '#' },
+  { id: '25', region: 'na', name: 'Beacon Care', icon: Activity, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '26', region: 'na', name: 'Synapse Inc', icon: Dna, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '27', region: 'na', name: 'Fortress Rx', icon: Shield, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '28', region: 'eu', name: 'Nordic Health', icon: Hexagon, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
+  { id: '29', region: 'eu', name: 'Arctic Bio', icon: Snowflake, color: 'text-[#145C9E] dark:text-[#708BA3]', link: '#' },
+  { id: '30', region: 'eu', name: 'Optima Labs', icon: Microscope, color: 'text-[#083B51] dark:text-[#B7CAD3]', link: '#' },
 ];
 
 export const GlobalClients = () => {
@@ -59,8 +58,8 @@ export const GlobalClients = () => {
         setClients(data.map((c: any) => ({
           ...c,
           id: c._id,
-          region: c.region || 'na',
-          logoPath: c.logo ? urlFor(c.logo).url() : undefined
+          region: (c.region === 'me' ? 'eu' : c.region) || 'na',
+          logoPath: c.logo ? urlFor(c.logo).width(300).url() : undefined
         })));
       }
     }).catch(console.error);
@@ -69,7 +68,7 @@ export const GlobalClients = () => {
   const filteredClients = clients.filter(c => activeRegion === 'all' || c.region === activeRegion);
 
   return (
-    <section id="clients" className="bg-white dark:bg-slate-950 relative z-10 rounded-t-[2.5rem] md:rounded-t-[3.5rem] -mt-6 md:-mt-10 py-10 lg:py-24 md:py-32 px-6 md:px-12 lg:px-24 overflow-hidden border-b border-gray-200 dark:border-slate-800 transition-colors duration-300">
+    <section id="clients" className="bg-slate-50 dark:bg-slate-900 relative z-10 rounded-t-[2.5rem] md:rounded-t-[3.5rem] -mt-6 md:-mt-10 py-10 lg:py-24 md:py-32 px-6 md:px-12 lg:px-24 overflow-hidden border-b border-gray-200 dark:border-slate-800 transition-colors duration-300">
       
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-stretch">
@@ -115,12 +114,12 @@ export const GlobalClients = () => {
           {/* Right Column: Region Selector & Client Grid */}
           <div className="lg:col-span-7 flex flex-col">
             {/* Region Selector */}
-            <div className="flex flex-wrap justify-start gap-2 mb-8 relative z-20 shrink-0 mt-8 lg:mt-0">
+            <div className="flex flex-wrap justify-center gap-2 mb-6 relative z-20 shrink-0 mt-6 lg:mt-0">
               {regions.map((region) => (
                 <button
                   key={region.id}
                   onClick={() => setActiveRegion(region.id)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                  className={`px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${
                     activeRegion === region.id 
                       ? 'bg-[var(--color-brand)] text-white shadow-md' 
                       : 'bg-gray-100 dark:bg-slate-900 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
@@ -132,11 +131,11 @@ export const GlobalClients = () => {
             </div>
 
             {/* Clients Grid */}
-            <div className="relative w-full rounded-3xl bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-4 md:p-6 shadow-inner flex-1 flex flex-col overflow-hidden">
+            <div className="relative w-full rounded-3xl bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 p-4 md:p-8 shadow-sm h-[320px] md:h-auto flex-1 flex flex-col overflow-hidden">
               <div 
-                className="w-full flex-1 flex justify-center lg:justify-start items-start overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full"
+                className="w-full h-full flex-1 overflow-y-auto touch-pan-y [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full"
               >
-                <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 pb-4">
+                <div className="grid grid-cols-3 md:flex md:flex-wrap justify-center content-start gap-4 lg:gap-5 pb-4 w-full">
                   <AnimatePresence mode="popLayout">
                     {filteredClients.map((client) => {
                       const Icon = client.icon;
@@ -148,18 +147,18 @@ export const GlobalClients = () => {
                           exit={{ opacity: 0, scale: 0.8 }}
                           transition={{ duration: 0.4, type: 'spring', bounce: 0.3 }}
                           key={client.id}
-                          className="group relative bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-xl p-1.5 flex flex-col items-center justify-center text-center hover:border-gray-300 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-[100px] sm:w-[115px] aspect-[4/3] shrink-0"
+                          className="group relative flex flex-col items-center justify-start text-center transition-all duration-300 hover:-translate-y-1 w-full md:w-28 lg:w-[16%] shrink-0"
                         >
-                          <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+                          <div className="w-full flex flex-col items-center justify-center gap-3">
                             {client.logoPath ? (
-                              <img loading="lazy" src={client.logoPath} alt={client.name} className="w-8 h-8 sm:w-10 sm:h-10 object-contain filter group-hover:scale-105 transition-transform duration-300" />
+                              <img loading="lazy" src={client.logoPath} alt={client.name} className="h-10 sm:h-12 w-auto object-contain filter group-hover:scale-105 transition-transform duration-300" />
                             ) : Icon ? (
-                              <Icon className={`w-7 h-7 sm:w-9 sm:h-9 transition-transform duration-300 group-hover:scale-110 ${client.color || 'text-gray-400'}`} />
+                              <Icon className={`w-10 h-10 sm:w-12 sm:h-12 transition-transform duration-300 group-hover:scale-110 ${client.color || 'text-gray-400'}`} />
                             ) : (
-                              <Globe className={`w-7 h-7 sm:w-9 sm:h-9 transition-transform duration-300 group-hover:scale-110 ${client.color || 'text-gray-400'}`} />
+                              <Globe className={`w-10 h-10 sm:w-12 sm:h-12 transition-transform duration-300 group-hover:scale-110 ${client.color || 'text-gray-400'}`} />
                             )}
                             
-                            <h3 className="text-[9px] sm:text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300 w-full leading-tight truncate px-0.5">
+                            <h3 className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300 w-full leading-tight truncate px-1">
                               {client.name}
                             </h3>
                           </div>

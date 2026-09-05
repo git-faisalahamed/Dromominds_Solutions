@@ -23,19 +23,38 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return 'light';
   });
 
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+  const [userToggled, setUserToggled] = useState(false);
+
+  const effectiveTheme = isMobile && !userToggled ? 'light' : theme;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    
+    root.classList.add(effectiveTheme);
+    localStorage.setItem('theme', effectiveTheme);
+  }, [effectiveTheme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setUserToggled(true);
+    if (isMobile && !userToggled) {
+      setTheme('dark');
+    } else {
+      setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    }
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme: effectiveTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

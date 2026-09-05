@@ -64,7 +64,7 @@ export const servicePagesData: Record<string, any> = {
     content: 'We validate ERPs and Track & Trace systems to ensure global supply chain integrity. Prevent counterfeits, meet serialization mandates, and streamline distribution.',
     image: 'https://images.unsplash.com/photo-1586528116311-ad8ed7c50a40?w=1600&q=80',
     features: [
-      { id: 1, title: 'ERP/SAP Validation', desc: 'Validating critical business and supply chain modules.', icon: Box },
+      { id: 1, title: 'Enterprise ERP Validation', desc: 'Validating critical business and supply chain modules.', icon: Box },
       { id: 2, title: 'Track & Trace', desc: 'Serialization validation aligned with DSCSA and global mandates.', icon: Map },
       { id: 3, title: 'Cold Chain Data', desc: 'Ensuring the integrity of temperature monitoring systems.', icon: Activity }
     ]

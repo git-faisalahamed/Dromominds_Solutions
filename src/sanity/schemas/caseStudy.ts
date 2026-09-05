@@ -1,6 +1,6 @@
 export default {
-  name: 'whitepaper',
-  title: 'Whitepaper',
+  name: 'caseStudy',
+  title: 'Case Study',
   type: 'document',
   fields: [
     {
@@ -9,24 +9,19 @@ export default {
       type: 'string',
     },
     {
-      name: 'description',
-      title: 'Description',
+      name: 'challenge',
+      title: 'Challenge',
       type: 'text',
     },
     {
-      name: 'image',
-      title: 'Image',
-      type: 'image',
+      name: 'solution',
+      title: 'Solution',
+      type: 'text',
     },
     {
-      name: 'type',
-      title: 'Type (e.g., Template, Framework, Case Study)',
-      type: 'string',
-    },
-    {
-      name: 'downloadLink',
-      title: 'Download Link',
-      type: 'string',
+      name: 'outcome',
+      title: 'Outcome',
+      type: 'text',
     },
     {
       name: 'author',

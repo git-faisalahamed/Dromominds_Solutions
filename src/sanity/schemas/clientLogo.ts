@@ -22,9 +22,8 @@ export default {
       type: 'string',
       options: {
         list: [
-          { title: 'North America', value: 'na' },
-          { title: 'Europe', value: 'eu' },
-          { title: 'Middle East', value: 'me' },
+          { title: 'North/South America', value: 'na' },
+          { title: 'Europe/Middle-east', value: 'eu' },
           { title: 'Asia Pacific', value: 'asia' },
         ],
       },

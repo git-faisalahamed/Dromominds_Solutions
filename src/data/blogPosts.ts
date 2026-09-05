@@ -9,6 +9,7 @@ export interface BlogPost {
     role: string;
     image?: string;
   };
+  authorType?: string;
   date: string;
   category: string;
   readTime: string;

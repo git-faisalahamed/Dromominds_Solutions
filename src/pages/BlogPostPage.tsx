@@ -1,13 +1,18 @@
-import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { PrefetchLink as Link } from '../components/PrefetchLink';
 import { motion, useScroll, useSpring } from 'motion/react';
-import { blogPosts } from '../data/blogPosts';
+import { blogPosts as localBlogPosts } from '../data/blogPosts';
 import { Calendar, Clock, ChevronLeft, ArrowRight, Share2, Linkedin, Twitter, Mail } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { sanityClient, urlFor } from '../lib/sanity';
+import { FAQSection } from '../components/FAQSection';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-  const post = blogPosts.find(p => p.slug === slug);
+  const [post, setPost] = useState<any>(localBlogPosts.find(p => p.slug === slug));
+  const [latestPosts, setLatestPosts] = useState<any[]>(localBlogPosts.filter(p => p.slug !== slug).slice(0, 3));
+  
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -18,6 +23,45 @@ export function BlogPostPage() {
   // Scroll to top when post changes
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [slug]);
+
+  useEffect(() => {
+    if (slug) {
+      sanityClient
+        .fetch(`*[_type == "post" && slug.current == $slug][0]{
+          title,
+          "slug": slug.current,
+          excerpt,
+          content,
+          coverImage,
+          category,
+          readTime,
+          date,
+          "author": {
+            "name": author,
+            "type": authorType,
+            "image": authorImage
+          }
+        }`, { slug })
+        .then((data) => {
+          if (data) setPost(data);
+        })
+        .catch(console.error);
+
+      sanityClient
+        .fetch(`*[_type == "post" && slug.current != $slug] | order(date desc)[0...3]{
+          title,
+          "slug": slug.current,
+          coverImage,
+          category,
+          readTime,
+          date
+        }`, { slug })
+        .then((data) => {
+          if (data && data.length > 0) setLatestPosts(data);
+        })
+        .catch(console.error);
+    }
   }, [slug]);
 
   if (!post) {
@@ -33,14 +77,14 @@ export function BlogPostPage() {
     );
   }
 
-  const latestPosts = blogPosts.filter(p => p.slug !== slug).slice(0, 3);
+  const coverImageUrl = post.coverImage ? (typeof post.coverImage === 'string' ? post.coverImage : urlFor(post.coverImage).width(1200).url()) : 'https://placehold.co/1200x600';
 
   return (
     <div className="bg-white min-h-screen pt-10 lg:pt-24 pb-20">
       <SEO 
         title={post.title} 
         description={post.excerpt} 
-        image={post.coverImage} 
+        image={coverImageUrl} 
       />
       <motion.div
         className="fixed top-0 left-0 right-0 h-1.5 bg-[var(--color-brand)] origin-left z-50 rounded-r-full"
@@ -66,10 +110,14 @@ export function BlogPostPage() {
           {post.excerpt}
         </p>
         <div className="flex items-center gap-4 py-6 border-y border-gray-100 mb-10">
-          <img src={post.author.image} alt={post.author.name} className="w-14 h-14 rounded-full border-2 border-red-50" />
+          {post.author?.image && <img src={typeof post.author.image === 'string' ? post.author.image : urlFor(post.author.image).width(150).url()} alt={post.author.name} className="w-14 h-14 rounded-full border-2 border-red-50" />}
           <div className="flex flex-col">
-            <span className="text-base font-bold text-gray-900">{post.author.name}</span>
-            <span className="text-sm text-gray-500">{post.author.role}</span>
+            <span className="text-base font-bold text-gray-900">{post.author?.name || 'Admin'}</span>
+            {post.author?.type ? (
+              <span className="text-xs text-[var(--color-brand)] font-bold uppercase tracking-wider">{post.author.type}</span>
+            ) : post.author?.role ? (
+              <span className="text-sm text-gray-500">{post.author.role}</span>
+            ) : null}
           </div>
           <div className="ml-auto hidden md:flex items-center gap-1 text-sm text-gray-500">
             <Calendar size={16} className="text-gray-400" />
@@ -81,7 +129,7 @@ export function BlogPostPage() {
       {/* Cover Image */}
       <div className="max-w-6xl mx-auto px-6 lg:px-8 mb-16">
         <div className="aspect-[21/9] rounded-3xl overflow-hidden shadow-2xl relative">
-          <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+          <img src={coverImageUrl} alt={post.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent mix-blend-overlay"></div>
         </div>
       </div>
@@ -132,11 +180,11 @@ export function BlogPostPage() {
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-6 uppercase tracking-wider border-b border-gray-200 pb-2">Latest Insights</h3>
               <div className="space-y-6">
-                {latestPosts.map(latest => (
+                {latestPosts.map((latest: any) => (
                   <div key={latest.slug} className="group cursor-pointer">
                     <Link to={`/blog/${latest.slug}`} className="flex gap-4">
                       <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                        <img loading="lazy" src={latest.coverImage} alt={latest.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
+                        <img loading="lazy" src={latest.coverImage ? (typeof latest.coverImage === 'string' ? latest.coverImage : urlFor(latest.coverImage).width(400).url()) : 'https://placehold.co/200'} alt={latest.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
                       </div>
                       <div className="flex flex-col justify-center">
                         <h4 className="text-sm font-bold text-gray-900 mb-2 leading-snug group-hover:text-[var(--color-brand)] transition-colors line-clamp-2">
@@ -155,8 +203,37 @@ export function BlogPostPage() {
         </aside>
       </div>
       
+      <div className="relative z-10 bg-white border-t border-gray-100">
+        <FAQSection 
+          faqs={[
+            {
+              question: "How can I apply these validation strategies to my organization?",
+              answer: "The strategies outlined in our articles are built on scalable methodologies like GAMP 5 and CSA. For a tailored implementation plan, you can schedule a gap analysis with our consulting team."
+            },
+            {
+              question: "Are the regulations mentioned in these articles current?",
+              answer: "Yes, our editorial team continuously monitors FDA, EMA, and ISO updates to ensure all published content reflects the most current regulatory guidance and enforcement trends."
+            },
+            {
+              question: "Can I share this article with my internal compliance team?",
+              answer: "Absolutely. We encourage sharing our technical resources internally to help upskill your Quality, IT, and Engineering departments on modern validation practices."
+            },
+            {
+              question: "Do you offer full-service consulting on these topics?",
+              answer: "Yes, Dromominds provides end-to-end strategic consulting, staff augmentation, and managed validation services for all the compliance challenges discussed in our insights."
+            },
+            {
+              question: "Where can I find templates related to this topic?",
+              answer: "Check our Resource Library or contact us directly. We maintain a comprehensive suite of pre-validated SOPs, CSV checklists, and protocol templates."
+            }
+          ]}
+          title="Related Compliance FAQs"
+          subtitle="Common questions regarding the implementation of our published methodologies."
+        />
+      </div>
+
       {/* Related Posts Full Width section (Alternative styling for end of post) */}
-      <div className="bg-gray-50 border-t border-gray-100 mt-24 py-10 lg:py-24">
+      <div className="bg-gray-50 border-t border-gray-100 mt-0 py-10 lg:py-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
             <h2 className="text-3xl font-bold font-serif text-gray-900">More from our experts</h2>
@@ -164,11 +241,11 @@ export function BlogPostPage() {
               View all articles <ArrowRight size={20} />
             </Link>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {latestPosts.map((post) => (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+            {latestPosts.map((post: any) => (
               <Link key={post.slug} to={`/blog/${post.slug}`} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col group">
                 <div className="h-48 overflow-hidden relative">
-                  <img loading="lazy" src={post.coverImage} alt={post.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                  <img loading="lazy" src={post.coverImage ? (typeof post.coverImage === 'string' ? post.coverImage : urlFor(post.coverImage).width(600).url()) : 'https://placehold.co/600'} alt={post.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-[var(--color-brand)] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
                     {post.category}
                   </div>

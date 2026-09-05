@@ -1,10 +1,13 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'motion/react';
+import { PageTransition } from './components/PageTransition';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { CookieBanner } from './components/CookieBanner';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
+import { pageView } from './lib/analytics';
 
 import { BookOpen } from 'lucide-react';
 import { LeadMagnetModal } from './components/LeadMagnetModal';
@@ -12,26 +15,90 @@ import { FloatingContactButtons } from './components/FloatingContactButtons';
 import { CsvAssessmentWizard } from './components/CsvAssessmentWizard';
 import { RoiCalculatorModal } from './components/RoiCalculatorModal';
 
-const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
-const ServicePage = lazy(() => import('./pages/ServicePage').then(module => ({ default: module.ServicePage })));
-const ContactPage = lazy(() => import('./pages/ContactPage').then(module => ({ default: module.ContactPage })));
-const AboutPage = lazy(() => import('./pages/AboutPage').then(module => ({ default: module.AboutPage })));
-const GenericPage = lazy(() => import('./pages/GenericPage').then(module => ({ default: module.GenericPage })));
-const StudioPage = lazy(() => import('./pages/StudioPage').then(module => ({ default: module.StudioPage })));
-const BlogListPage = lazy(() => import('./pages/BlogListPage').then(module => ({ default: module.BlogListPage })));
-const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(module => ({ default: module.BlogPostPage })));
-const NewsPage = lazy(() => import('./pages/NewsPage').then(module => ({ default: module.NewsPage })));
-const WebinarsPage = lazy(() => import('./pages/WebinarsPage').then(module => ({ default: module.WebinarsPage })));
-const VideosPage = lazy(() => import('./pages/VideosPage').then(module => ({ default: module.VideosPage })));
+import { Home } from './pages/Home';
 
-function ScrollToTop() {
-  const { pathname } = useLocation();
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  componentImport: () => Promise<any>,
+  exportName?: string
+) {
+  return lazy(async () => {
+    const pageAlreadyRefreshed = JSON.parse(
+      window.sessionStorage.getItem('page-has-been-refreshed') || 'false'
+    );
+    try {
+      const component = await componentImport();
+      window.sessionStorage.setItem('page-has-been-refreshed', 'false');
+      if (exportName && component[exportName]) {
+        return { default: component[exportName] };
+      }
+      if (component.default) {
+        return { default: component.default };
+      }
+      return component;
+    } catch (error) {
+      if (!pageAlreadyRefreshed) {
+        window.sessionStorage.setItem('page-has-been-refreshed', 'true');
+        window.location.reload();
+      }
+      throw error;
+    }
+  });
+}
+
+const ServicePage = lazyWithRetry(() => import('./pages/ServicePage'), 'ServicePage');
+const ContactPage = lazyWithRetry(() => import('./pages/ContactPage'), 'ContactPage');
+const AboutPage = lazyWithRetry(() => import('./pages/AboutPage'), 'AboutPage');
+const GenericPage = lazyWithRetry(() => import('./pages/GenericPage'), 'GenericPage');
+const StudioPage = lazyWithRetry(() => import('./pages/StudioPage'), 'StudioPage');
+const BlogListPage = lazyWithRetry(() => import('./pages/BlogListPage'), 'BlogListPage');
+const BlogPostPage = lazyWithRetry(() => import('./pages/BlogPostPage'), 'BlogPostPage');
+const NewsPage = lazyWithRetry(() => import('./pages/NewsPage'), 'NewsPage');
+const VideosPage = lazyWithRetry(() => import('./pages/VideosPage'), 'VideosPage');
+const ResourcesPage = lazyWithRetry(() => import('./pages/ResourcesPage'), 'ResourcesPage');
+
+function PageTracker() {
+  const location = useLocation();
   React.useEffect(() => {
-    document.documentElement.style.scrollBehavior = 'auto';
-    window.scrollTo(0, 0);
-    document.documentElement.style.scrollBehavior = 'smooth';
-  }, [pathname]);
+    // We delay slightly to let the document title update before firing
+    const timeout = setTimeout(() => {
+      pageView(location.pathname + location.search);
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [location]);
   return null;
+}
+
+function AnimatedRoutes({ onOpenLeadMagnet }: { onOpenLeadMagnet: () => void }) {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Home onOpenLeadMagnet={onOpenLeadMagnet} /></PageTransition>} />
+        <Route path="/computerized-system-validation" element={<PageTransition><ServicePage overrideId="csv" /></PageTransition>} />
+        <Route path="/computer-software-assurance" element={<PageTransition><ServicePage overrideId="csv" /></PageTransition>} />
+        <Route path="/equipment-qualification" element={<PageTransition><ServicePage overrideId="equipment-qualification" /></PageTransition>} />
+        <Route path="/data-integrity" element={<PageTransition><ServicePage overrideId="gxp-compliance" /></PageTransition>} />
+        <Route path="/audit-remediation" element={<PageTransition><ServicePage overrideId="validation" /></PageTransition>} />
+        <Route path="/qms-implementation" element={<PageTransition><ServicePage overrideId="qms" /></PageTransition>} />
+        <Route path="/expertise/:id" element={<PageTransition><ServicePage /></PageTransition>} />
+        <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+        <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+        <Route path="/blog" element={<PageTransition><BlogListPage /></PageTransition>} />
+        <Route path="/blog/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
+        <Route path="/resources/news" element={<PageTransition><NewsPage /></PageTransition>} />
+        <Route path="/resources/videos" element={<PageTransition><VideosPage /></PageTransition>} />
+        <Route path="/resources/case-studies" element={<PageTransition><ResourcesPage /></PageTransition>} />
+        <Route path="/resources/white-papers" element={<PageTransition><ResourcesPage /></PageTransition>} />
+        <Route path="/resources" element={<PageTransition><ResourcesPage /></PageTransition>} />
+        <Route path="/resources/:category" element={<PageTransition><ResourcesPage /></PageTransition>} />
+        <Route path="/partners" element={<PageTransition><GenericPage type="partner" /></PageTransition>} />
+        <Route path="/partners/:id" element={<PageTransition><GenericPage type="partner" /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><GenericPage type="legal" /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><GenericPage type="legal" /></PageTransition>} />
+        <Route path="*" element={<PageTransition><Home onOpenLeadMagnet={onOpenLeadMagnet} /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
 }
 
 export default function App() {
@@ -93,7 +160,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-white font-sans text-gray-900 selection:bg-[var(--color-brand)] selection:text-white transition-colors duration-300 dark:bg-slate-950 dark:text-gray-100">
+      <div className="min-h-screen bg-white font-sans text-gray-900 selection:bg-[var(--color-brand)] selection:text-white transition-colors duration-300 dark:bg-slate-950 dark:text-gray-100 overflow-x-clip w-full max-w-full relative">
          <LeadMagnetModal 
            isOpen={isLeadMagnetOpen} 
            onClose={() => setIsLeadMagnetOpen(false)} 
@@ -116,31 +183,8 @@ export default function App() {
                <>
                  <CookieBanner />
                  <Navigation />
-                 <ScrollToTop />
-                 <Routes>
-                   <Route path="/" element={<Home onOpenLeadMagnet={() => setIsLeadMagnetOpen(true)} />} />
-                   <Route path="/computerized-system-validation" element={<ServicePage overrideId="csv" />} />
-                   <Route path="/computer-software-assurance" element={<ServicePage overrideId="csv" />} />
-                   <Route path="/equipment-qualification" element={<ServicePage overrideId="equipment-qualification" />} />
-                   <Route path="/data-integrity" element={<ServicePage overrideId="gxp-compliance" />} />
-                   <Route path="/audit-remediation" element={<ServicePage overrideId="validation" />} />
-                   <Route path="/qms-implementation" element={<ServicePage overrideId="qms" />} />
-                   <Route path="/expertise/:id" element={<ServicePage />} />
-                   <Route path="/contact" element={<ContactPage />} />
-                   <Route path="/about" element={<AboutPage />} />
-                   <Route path="/blog" element={<BlogListPage />} />
-                   <Route path="/blog/:slug" element={<BlogPostPage />} />
-                   <Route path="/resources/news" element={<NewsPage />} />
-                   <Route path="/resources/webinars" element={<WebinarsPage />} />
-                   <Route path="/resources/videos" element={<VideosPage />} />
-                   <Route path="/resources" element={<GenericPage type="resource" />} />
-                   <Route path="/resources/:id" element={<GenericPage type="resource" />} />
-                   <Route path="/partners" element={<GenericPage type="partner" />} />
-                   <Route path="/partners/:id" element={<GenericPage type="partner" />} />
-                   <Route path="/privacy" element={<GenericPage type="legal" />} />
-                   <Route path="/terms" element={<GenericPage type="legal" />} />
-                   <Route path="*" element={<Home onOpenLeadMagnet={() => setIsLeadMagnetOpen(true)} />} />
-                 </Routes>
+                 <PageTracker />
+                 <AnimatedRoutes onOpenLeadMagnet={() => setIsLeadMagnetOpen(true)} />
                  <FloatingContactButtons />
                  <ScrollToTopButton />
                  <Footer />

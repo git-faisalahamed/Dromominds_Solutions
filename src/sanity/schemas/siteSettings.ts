@@ -14,9 +14,38 @@ export default {
       type: 'text',
     },
     {
+      name: 'favicon',
+      title: 'Favicon Image',
+      type: 'image',
+      description: 'Upload a favicon image (recommended size: 32x32 or 64x64)',
+      options: {
+        hotspot: true,
+      }
+    },
+    {
       name: 'contactEmail',
       title: 'Contact Email',
       type: 'string',
+    },
+    {
+      name: 'netherlandsOfficeAddress',
+      title: 'Netherlands Office Address',
+      type: 'text',
+    },
+    {
+      name: 'netherlandsOfficePhone',
+      title: 'Netherlands Office Phone',
+      type: 'string',
+    },
+    {
+      name: 'bengaluruOfficeAddress',
+      title: 'Bengaluru Office Address',
+      type: 'text',
+    },
+    {
+      name: 'kolkataOfficeAddress',
+      title: 'Kolkata Office Address',
+      type: 'text',
     },
     {
       name: 'indiaOfficeAddress',
@@ -29,13 +58,23 @@ export default {
       type: 'string',
     },
     {
-      name: 'netherlandsOfficeAddress',
-      title: 'Netherlands Office Address',
+      name: 'contactFormTitle',
+      title: 'Contact Form Title',
+      type: 'string',
+    },
+    {
+      name: 'contactFormSubtitle',
+      title: 'Contact Form Subtitle',
       type: 'text',
     },
     {
-      name: 'netherlandsOfficePhone',
-      title: 'Netherlands Office Phone',
+      name: 'testimonialsTitle',
+      title: 'Testimonials Section Title',
+      type: 'string',
+    },
+    {
+      name: 'testimonialsSubtitle',
+      title: 'Testimonials Section Subtitle',
       type: 'string',
     },
     {

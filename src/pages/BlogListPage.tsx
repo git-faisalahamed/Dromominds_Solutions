@@ -1,11 +1,39 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { PrefetchLink as Link } from '../components/PrefetchLink';
 import { motion } from 'motion/react';
-import { blogPosts } from '../data/blogPosts';
+import { blogPosts as localBlogPosts } from '../data/blogPosts';
 import { Calendar, Clock, ChevronRight, User } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { sanityClient, urlFor } from '../lib/sanity';
+import { FAQSection } from '../components/FAQSection';
 
 export function BlogListPage() {
+  const [posts, setPosts] = useState(localBlogPosts);
+
+  useEffect(() => {
+    sanityClient
+      .fetch(`*[_type == "post"] | order(date desc){
+        title,
+        "slug": slug.current,
+        excerpt,
+        coverImage,
+        category,
+        readTime,
+        date,
+        authorType,
+        "author": {
+          "name": author,
+          "image": authorImage
+        }
+      }`)
+      .then((data) => {
+        if (data && data.length > 0) {
+          setPosts(data);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <div className="bg-slate-50 min-h-screen pb-24">
       <SEO title="Blog & Insights" description="Latest news and insights on GxP, FDA compliance, and continuous validation from Dromominds experts." />
@@ -35,7 +63,7 @@ export function BlogListPage() {
       </section>
 
       {/* Featured Post */}
-      {blogPosts.length > 0 && (
+      {posts.length > 0 && (
         <section className="max-w-7xl mx-auto px-6 lg:px-8 -mt-12 relative z-20">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -45,40 +73,41 @@ export function BlogListPage() {
           >
             <div className="lg:w-1/2 overflow-hidden">
               <img 
-                src={blogPosts[0].coverImage} 
-                alt={blogPosts[0].title} 
+                src={posts[0].coverImage ? (typeof posts[0].coverImage === 'string' ? posts[0].coverImage : urlFor(posts[0].coverImage).width(1200).url()) : 'https://placehold.co/800x600'} 
+                alt={posts[0].title} 
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
               />
             </div>
             <div className="lg:w-1/2 p-6 lg:p-12 flex flex-col justify-center">
               <div className="flex items-center gap-4 text-sm font-medium text-[var(--color-brand)] mb-4">
                 <span className="bg-red-50 text-[var(--color-brand)] px-3 py-1 rounded-full uppercase tracking-wider text-xs">
-                  {blogPosts[0].category}
+                  {posts[0].category}
                 </span>
                 <span className="flex items-center gap-1 text-gray-500">
-                  <Clock size={16} /> {blogPosts[0].readTime}
+                  <Clock size={16} /> {posts[0].readTime}
                 </span>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4 group-hover:text-[var(--color-brand)] transition-colors">
-                <Link to={`/blog/${blogPosts[0].slug}`}>
-                  {blogPosts[0].title}
+                <Link to={`/blog/${posts[0].slug}`}>
+                  {posts[0].title}
                 </Link>
               </h2>
               <p className="text-gray-600 mb-8 line-clamp-3 leading-relaxed">
-                {blogPosts[0].excerpt}
+                {posts[0].excerpt}
               </p>
               <div className="flex items-center justify-between mt-auto">
                 <div className="flex items-center gap-3">
-                  <img src={blogPosts[0].author.image} alt={blogPosts[0].author.name} className="w-10 h-10 rounded-full" />
+                  {posts[0].author?.image && <img src={typeof posts[0].author.image === 'string' ? posts[0].author.image : urlFor(posts[0].author.image).width(100).url()} alt={posts[0].author.name} className="w-10 h-10 rounded-full" />}
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900">{blogPosts[0].author.name}</h4>
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                      <Calendar size={12} /> {new Date(blogPosts[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <h4 className="text-sm font-semibold text-gray-900">{posts[0].author?.name || 'Admin'}</h4>
+                    {posts[0].authorType && <span className="text-[10px] text-[var(--color-brand)] font-bold uppercase tracking-wider block -mt-0.5">{posts[0].authorType}</span>}
+                    <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                      <Calendar size={12} /> {new Date(posts[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
                 </div>
                 <Link 
-                  to={`/blog/${blogPosts[0].slug}`}
+                  to={`/blog/${posts[0].slug}`}
                   className="inline-flex items-center text-[var(--color-brand)] font-semibold hover:gap-2 transition-all"
                 >
                   Read Article <ChevronRight size={20} />
@@ -91,8 +120,8 @@ export function BlogListPage() {
 
       {/* Grid Posts */}
       <section className="max-w-7xl mx-auto px-6 lg:px-8 mt-24">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.slice(1).map((post, index) => (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+          {posts.slice(1).map((post, index) => (
             <motion.article 
               key={post.slug}
               initial={{ opacity: 0, y: 20 }}
@@ -104,7 +133,7 @@ export function BlogListPage() {
               <Link to={`/blog/${post.slug}`} className="block overflow-hidden relative">
                 <img 
                   loading="lazy"
-                  src={post.coverImage} 
+                  src={post.coverImage ? (typeof post.coverImage === 'string' ? post.coverImage : urlFor(post.coverImage).width(800).url()) : 'https://placehold.co/800x600'} 
                   alt={post.title} 
                   className="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-700" 
                 />
@@ -125,14 +154,17 @@ export function BlogListPage() {
                 </p>
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {post.author.image ? (
-                      <img loading="lazy" src={post.author.image} alt={post.author.name} className="w-8 h-8 rounded-full" />
+                    {post.author?.image ? (
+                      <img loading="lazy" src={typeof post.author.image === 'string' ? post.author.image : urlFor(post.author.image).width(100).url()} alt={post.author.name} className="w-8 h-8 rounded-full" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
                         <User size={16} />
                       </div>
                     )}
-                    <span className="text-sm font-medium text-gray-900">{post.author.name}</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-900 leading-tight">{post.author?.name || 'Admin'}</span>
+                      {post.authorType && <span className="text-[10px] text-[var(--color-brand)] font-bold uppercase tracking-wider">{post.authorType}</span>}
+                    </div>
                   </div>
                   <Link 
                     to={`/blog/${post.slug}`}
@@ -148,6 +180,35 @@ export function BlogListPage() {
         </div>
       </section>
       
+      <div className="relative z-10 bg-white">
+        <FAQSection 
+          faqs={[
+            {
+              question: "What topics are covered in the Dromominds Insights Blog?",
+              answer: "Our blog covers a wide range of topics critical to life sciences, including GxP compliance strategies, Computer Software Assurance (CSA) methodologies, FDA regulatory updates, and technical deep-dives into enterprise system validation."
+            },
+            {
+              question: "Who writes the content for your blog?",
+              answer: "All articles are authored by our senior architects, former FDA auditors, and lead validation engineers. You receive unfiltered, highly technical insights straight from industry veterans."
+            },
+            {
+              question: "How often is new content published?",
+              answer: "We publish detailed regulatory analysis and technical deployment strategies bi-weekly, ensuring you stay ahead of the rapidly evolving compliance landscape."
+            },
+            {
+              question: "Can I suggest a topic for your experts to cover?",
+              answer: "Yes, we welcome suggestions from our readers. You can reach out via our contact page to propose topics regarding validation challenges or regulatory questions you’d like us to explore."
+            },
+            {
+              question: "Do you offer downloadable resources alongside your articles?",
+              answer: "Many of our deep-dive articles include complementary whitepapers, CSV checklists, and SOP templates that you can download to assist in your compliance efforts."
+            }
+          ]}
+          title="Insights & Research FAQs"
+          subtitle="Answers regarding our published regulatory analysis and technical content."
+        />
+      </div>
+
       {/* Newsletter */}
       <section className="max-w-5xl mx-auto px-6 lg:px-8 mt-32 mb-12">
         <div className="bg-gray-900 rounded-3xl p-6 lg:p-12 relative overflow-hidden shadow-2xl">

@@ -27,7 +27,7 @@ export const capabilitiesData = {
     tabs: [
       {
         title: 'ERP & Enterprise System Validation',
-        content: 'Validating massive-scale ERP systems (SAP S/4HANA, Oracle ERP Cloud) and their integrations across the supply chain. We manage the complexity of end-to-end data flows covering inventory management, batch release, and serialization, ensuring holistic data integrity during global rollouts.',
+        content: 'Validating massive-scale ERP systems (Enterprise ERP, Oracle ERP Cloud) and their integrations across the supply chain. We manage the complexity of end-to-end data flows covering inventory management, batch release, and serialization, ensuring holistic data integrity during global rollouts.',
         image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80'
       },
       {
@@ -54,7 +54,7 @@ export const capabilitiesData = {
     caseStudies: [
       {
         client: 'Global Top-10 CDMO',
-        challenge: 'Simultaneous deployment and validation of SAP S/4HANA and a centralized LIMS across 12 manufacturing sites located in the US, EU, and APAC, complicated by fragmented local legacy systems.',
+        challenge: 'Simultaneous deployment and validation of Enterprise ERP and a centralized LIMS across 12 manufacturing sites located in the US, EU, and APAC, complicated by fragmented local legacy systems.',
         solution: 'Engineered a unified global Validation Master Plan utilizing a hub-and-spoke testing methodology. We automated 70% of OQ protocols leveraging Tosca, and standardized vendor assessments across 40+ third-party suppliers.',
         result: 'Achieved complete global rollout 2 months ahead of schedule. Post-deployment regulatory audits by the FDA and EMA resulted in zero 483s or major findings regarding system validation or data integrity.'
       },

@@ -84,10 +84,10 @@ export const CsvAssessmentSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-[var(--color-brand)] rounded-3xl blur opacity-30 animate-pulse"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#0B1F3A] via-[#1D4ED8] to-[#06B6D4] rounded-3xl blur opacity-40 animate-pulse"></div>
             
             <div className="bg-slate-900 border border-slate-700/50 rounded-3xl p-6 md:p-8 relative shadow-2xl backdrop-blur-xl group overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-brand)] to-transparent opacity-50"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#06B6D4] to-transparent opacity-50"></div>
               
               <div className="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
                 <div>

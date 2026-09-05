@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { PrefetchLink as Link } from './PrefetchLink';
 
 export const LeadMagnetAudit = () => (
   <section id="audit" className="relative z-10 rounded-t-[2.5rem] md:rounded-t-[3.5rem] -mt-6 md:-mt-10 shadow-[0_-20px_40px_-20px_rgba(0,0,0,0.2)] py-10 lg:py-24 px-6 md:px-12 lg:px-24 overflow-hidden bg-slate-950">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { PrefetchLink as Link } from '../components/PrefetchLink';
 import { servicePagesData } from '../data/pagesData';
 import { ArrowRight, ChevronRight, ChevronDown, CheckCircle2, Target, Zap, Shield, BarChart, Server, Layers, FileSignature, Database, GitMerge, Sliders, Cpu, Activity, ShieldCheck, Cloud } from 'lucide-react';
 import { blogPosts } from '../data/blogPosts';
@@ -7,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { AnimatedStringCounter } from '../components/AnimatedCounter';
 import { SEO } from '../components/SEO';
+import { sanityClient, urlFor } from '../lib/sanity';
+import { FAQSection } from '../components/FAQSection';
 
 const FAQItem = ({ question, answer }: { question: string, answer: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,10 +46,32 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
 export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
   const { id: paramId } = useParams<{ id: string }>();
   const id = overrideId || paramId;
-  const pageData = id ? servicePagesData[id] : null;
+  const [sanityPageData, setSanityPageData] = useState<any>(null);
+  const pageData = sanityPageData || (id ? servicePagesData[id] : null);
+
   const [calcSystems, setCalcSystems] = useState(12);
   const [calcDays, setCalcDays] = useState(90);
   const [calcFtes, setCalcFtes] = useState(5);
+
+  useEffect(() => {
+    if (id) {
+       sanityClient.fetch(`*[_type == "servicePage" && slug.current == $id][0]{
+          title,
+          subtitle,
+          tagline,
+          image,
+          tags,
+          metrics,
+          methodology,
+          features,
+          tabs
+       }`, { id })
+       .then(data => {
+         if (data) setSanityPageData(data);
+       })
+       .catch(console.error);
+    }
+  }, [id]);
 
   const calculatedSavings = Math.round((calcSystems * Math.max(calcDays - 30, 0) * (calcFtes * 60)) * 0.45).toLocaleString();
   const calculatedReduction = Math.round((Math.max(calcDays - 30, 0) / calcDays) * 100);
@@ -124,51 +149,51 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[var(--color-brand-dim)]/5 to-transparent blur-3xl mix-blend-overlay"></div>
         <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-blue-900/10 blur-3xl mix-blend-overlay"></div>
         
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 text-slate-300 font-bold text-xs uppercase tracking-widest rounded mb-6 border border-slate-700">
-               <Sliders className="w-4 h-4" /> CSA Strategy Engine
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-10 sm:mb-16">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 text-slate-300 font-bold text-xs uppercase tracking-widest rounded mb-4 sm:mb-6 border border-slate-700">
+                 <Sliders className="w-4 h-4" /> CSA Strategy Engine
+              </div>
+              <h3 className="text-2xl sm:text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                Interactive Compliance Profiler
+              </h3>
+              <p className="mt-4 sm:mt-6 text-base sm:text-xl text-slate-400 max-w-3xl mx-auto font-light">
+                Dial in your system parameters below to see how our risk-based Computer Software Assurance (CSA) methodology optimizes your validation workload.
+              </p>
             </div>
-            <h3 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
-              Interactive Compliance Profiler
-            </h3>
-            <p className="mt-6 text-xl text-slate-400 max-w-3xl mx-auto font-light">
-              Dial in your system parameters below to see how our risk-based Computer Software Assurance (CSA) methodology optimizes your validation workload.
-            </p>
-          </div>
 
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            {/* Controls */}
-            <div className="lg:col-span-5 space-y-8 bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
-              <div>
-                <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">System Classification</label>
-                <div className="flex flex-wrap gap-3">
-                  {['QMS', 'LIMS', 'ERP', 'eTMF', 'Custom App'].map(sys => (
-                    <button 
-                      key={sys}
-                      onClick={() => setProfilerSystem(sys)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${profilerSystem === sys ? 'bg-[var(--color-brand)] text-white shadow-lg shadow-[var(--color-brand)]/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-                    >
-                      {sys}
-                    </button>
-                  ))}
+            <div className="grid lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              {/* Controls */}
+              <div className="lg:col-span-5 space-y-6 sm:space-y-8 bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl">
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 sm:mb-4">System Classification</label>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {['QMS', 'LIMS', 'ERP', 'eTMF', 'Custom App'].map(sys => (
+                      <button 
+                        key={sys}
+                        onClick={() => setProfilerSystem(sys)}
+                        className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${profilerSystem === sys ? 'bg-[var(--color-brand)] text-white shadow-lg shadow-[var(--color-brand)]/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                      >
+                        {sys}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Infrastructure Model</label>
-                <div className="flex flex-wrap gap-3">
-                  {['SaaS', 'PaaS / IaaS', 'On-Premise'].map(host => (
-                    <button 
-                      key={host}
-                      onClick={() => setProfilerHosting(host)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${profilerHosting === host ? 'bg-[var(--color-brand)] text-white shadow-lg shadow-[var(--color-brand)]/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-                    >
-                      {host}
-                    </button>
-                  ))}
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 sm:mb-4">Infrastructure Model</label>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {['SaaS', 'PaaS / IaaS', 'On-Premise'].map(host => (
+                      <button 
+                        key={host}
+                        onClick={() => setProfilerHosting(host)}
+                        className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${profilerHosting === host ? 'bg-[var(--color-brand)] text-white shadow-lg shadow-[var(--color-brand)]/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                      >
+                        {host}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
               <div>
                 <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center justify-between">
@@ -293,7 +318,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                   {pageData.subtitle}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                  <Link to="/contact" className="bg-[var(--color-brand)] text-white px-8 py-4 rounded-lg font-bold hover:bg-rose-600 transition flex items-center justify-center text-lg w-full sm:w-auto text-center shadow-lg shadow-[var(--color-brand)]/25">
+                  <Link to="/contact" className="bg-[var(--color-brand)] text-white px-8 py-4 rounded-lg font-bold hover:bg-[var(--color-primary-dark)] transition flex items-center justify-center text-lg w-full sm:w-auto text-center shadow-lg shadow-[var(--color-brand)]/25">
                     Consult an Expert <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
                   <a href="#offerings" className="bg-slate-800 text-white px-8 py-4 rounded-lg font-bold hover:bg-slate-700 transition border border-slate-700 flex items-center justify-center text-lg w-full sm:w-auto text-center">
@@ -316,7 +341,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                   <div className="space-y-8 relative z-10">
                     {metrics.map((metric: any, i: number) => (
                       <div key={i} className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 text-[var(--color-brand)] font-bold text-xl border border-slate-700">
+                        <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 text-[#06B6D4] font-bold text-xl border border-slate-700">
                           <AnimatedStringCounter text={metric.value} delay={i * 0.1} />
                         </div>
                         <div>
@@ -357,7 +382,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
           </div>
           <div className="w-full lg:w-1/2 relative min-h-[40vh] lg:min-h-full">
             <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent z-10 w-32 hidden lg:block"></div>
-            <img src={pageData.image} alt={pageData.title} className="absolute inset-0 w-full h-full object-cover" />
+            <img src={pageData.image ? (typeof pageData.image === 'string' ? pageData.image : urlFor(pageData.image).width(1200).url()) : 'https://placehold.co/1200x600'} alt={pageData.title} className="absolute inset-0 w-full h-full object-cover" />
           </div>
         </section>
       );
@@ -371,28 +396,28 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
            
            <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 flex flex-col lg:flex-row items-center gap-16">
             <motion.div className="flex-1" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800/80 text-[var(--color-brand)] text-xs font-bold rounded-md mb-6 uppercase tracking-wider border border-slate-700 backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800/80 text-[#06B6D4] text-xs font-bold rounded-md mb-6 uppercase tracking-wider border border-slate-700 backdrop-blur-sm">
                 <Layers className="w-4 h-4" />
                 {pageData.tagline || 'Essential Service'}
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-sans font-black text-white mb-6 tracking-tight leading-tight">{pageData.title}</h1>
               <p className="text-2xl text-slate-300 mb-10 font-light leading-relaxed max-w-2xl">{pageData.subtitle}</p>
               <div className="flex flex-col sm:flex-row gap-4">
-                  <Link to="/contact" className="bg-[var(--color-brand)] text-white px-8 py-4 rounded-lg font-bold hover:bg-rose-600 transition flex items-center justify-center text-lg shadow-lg">
+                  <Link to="/contact" className="bg-[var(--color-brand)] text-white px-8 py-4 rounded-lg font-bold hover:bg-[#07162B] transition flex items-center justify-center text-lg shadow-lg">
                     Speak With Advisory <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
               </div>
             </motion.div>
             
             <motion.div className="flex-1 w-full" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-              <div className="bg-slate-800/60 rounded-3xl p-8 lg:p-12 shadow-2xl border border-slate-700 backdrop-blur-xl grid grid-cols-1 sm:grid-cols-2 gap-8 relative overflow-hidden">
+              <div className="bg-slate-800/60 rounded-3xl p-8 lg:p-12 shadow-2xl border border-slate-700 backdrop-blur-xl grid grid-cols-2 gap-4 md:gap-8 relative overflow-hidden">
                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[var(--color-brand)] rounded-full blur-[80px] opacity-30"></div>
                 {metrics.map((metric: any, i: number) => (
-                  <div key={i} className={`flex flex-col ${i === 0 ? 'sm:col-span-2 border-b border-slate-700 pb-8 mb-2' : ''}`}>
+                  <div key={i} className={`flex flex-col ${i === 0 ? 'col-span-2 border-b border-slate-700 pb-8 mb-2' : ''}`}>
                     <div className="text-5xl font-black text-white mb-2 tracking-tighter">
                       <AnimatedStringCounter text={metric.value} delay={i * 0.1} />
                     </div>
-                    <div className="text-xs font-bold text-[var(--color-brand)] uppercase tracking-widest leading-relaxed">{metric.label}</div>
+                    <div className="text-xs font-bold text-[#06B6D4] uppercase tracking-widest leading-relaxed">{metric.label}</div>
                   </div>
                 ))}
               </div>
@@ -406,11 +431,11 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
     return (
       <section className="relative pt-10 lg:pt-32 pb-24 bg-slate-900 overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-20 mix-blend-overlay">
-          <img src={pageData.image} className="w-full h-full object-cover grayscale" />
+          <img src={pageData.image ? (typeof pageData.image === 'string' ? pageData.image : urlFor(pageData.image).width(1200).url()) : 'https://placehold.co/1200x600'} className="w-full h-full object-cover grayscale" />
           <div className="absolute inset-0 bg-[var(--color-brand)] mix-blend-multiply opacity-50"></div>
         </div>
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center">
-            <div className="inline-block border border-[var(--color-brand)]/30 bg-[var(--color-brand)]/10 text-[var(--color-brand)] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
+            <div className="inline-block border border-[#06B6D4]/30 bg-[#06B6D4]/10 text-[#06B6D4] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
               {pageData.tagline}
             </div>
             <h1 className="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter uppercase">
@@ -425,7 +450,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                   <div className="text-5xl font-black text-white mb-2">
                     <AnimatedStringCounter text={metric.value} delay={i * 0.1} />
                   </div>
-                  <div className="text-xs text-[var(--color-brand)] font-bold uppercase tracking-widest">{metric.label}</div>
+                  <div className="text-xs text-[#06B6D4] font-bold uppercase tracking-widest">{metric.label}</div>
                 </div>
               ))}
             </div>
@@ -449,7 +474,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
               <h2 className="text-sm font-bold text-[var(--color-brand)] uppercase tracking-widest mb-3">Capabilities</h2>
               <h3 className="text-3xl md:text-5xl font-bold mb-10 text-gray-900 tracking-tight">Key Offerings</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
               {pageData.features.map((feature: any) => (
                 <div key={feature.id || feature.title} className="bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-200 hover:border-[var(--color-brand)] hover:shadow-lg transition-all duration-300 group">
                   <div className="w-14 h-14 bg-red-50 group-hover:bg-[var(--color-brand)] group-hover:text-white rounded-xl flex items-center justify-center mb-8 text-[var(--color-brand)] transition-colors duration-300">
@@ -486,7 +511,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                   >
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] group">
                       <div className="absolute inset-0 bg-[var(--color-brand)]/10 group-hover:bg-transparent transition-colors duration-500 z-10" />
-                      <img loading="lazy" src={tab.image || pageData.image} alt={tab.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                      <img loading="lazy" src={tab.image ? (typeof tab.image === 'string' ? tab.image : urlFor(tab.image).width(800).url()) : (pageData.image ? (typeof pageData.image === 'string' ? pageData.image : urlFor(pageData.image).width(800).url()) : 'https://placehold.co/800x600')} alt={tab.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                     </div>
                   </motion.div>
 
@@ -521,7 +546,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
               <h2 className="text-sm font-bold text-[var(--color-brand)] uppercase tracking-widest mb-3">Capabilities</h2>
               <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight">Technical Offerings</h3>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
               {itemsToRender.map((tab: any, index: number) => (
                 <div key={index} className="bg-slate-800 rounded-2xl p-6 md:p-8 border border-slate-700 hover:border-[var(--color-brand)] transition-colors">
                   <div className="w-12 h-12 bg-slate-700 rounded-lg mb-6 flex items-center justify-center">
@@ -553,7 +578,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
             </div>
             
             <div className="lg:w-2/3">
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 {itemsToRender.map((tab: any, index: number) => (
                   <div key={index} className="flex flex-col gap-6 p-6 md:p-8 rounded-3xl bg-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 group">
                     <div className="w-16 h-16 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-center flex-shrink-0 text-[var(--color-brand)] group-hover:bg-[var(--color-brand)] group-hover:text-white transition-colors duration-400">
@@ -589,7 +614,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                <p className="mt-6 text-xl text-slate-600 max-w-3xl">We maintain comprehensive requirement libraries natively mapping to the following global regulations, engineering systems to be unconditionally audit-ready.</p>
             </div>
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {[
                 { title: "FDA 21 CFR Part 11", desc: "Rigorous enforcement of electronic records, electronic signatures, audit trails, and strict chronological access controls." },
                 { title: "EU Annex 11", desc: "Expert computerised systems governance, continuous risk management, and formal lifecycle documentation for EMA." },
@@ -622,7 +647,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                   <GitMerge className="w-4 h-4" /> V-Model Architecture
                 </div>
                 <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight mb-6">
-                  Risk-Based Validation <br/><span className="text-[var(--color-brand)]">Lifecycle Matrix</span>
+                  Risk-Based Validation <br/><span className="text-[#06B6D4]">Lifecycle Matrix</span>
                 </h3>
                 <p className="text-xl text-slate-400 mb-10 leading-relaxed">
                   We don't just execute scripts. We engineer end-to-end traceability frameworks aligning precise functional specifications directly to targeted IQ/OQ/PQ protocols, eliminating compliance gaps.
@@ -630,7 +655,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
 
                 <div className="bg-slate-800/50 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
                   <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-700">
-                    <Database className="w-8 h-8 text-[var(--color-brand)]" />
+                    <Database className="w-8 h-8 text-[#06B6D4]" />
                     <div>
                       <h4 className="text-xl font-bold">Dynamic Traceability Matrix (TM)</h4>
                       <p className="text-sm text-slate-400">Continuous bidirectional mapping</p>
@@ -638,8 +663,8 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                   </div>
                   <ul className="space-y-4 font-mono text-sm text-slate-300">
                     <li className="flex justify-between items-center"><span className="text-slate-500">USER_REQ (URS-101)</span> <ArrowRight className="w-4 h-4 text-slate-600"/> <span className="text-white">FUNC_SPEC (FS-204)</span></li>
-                    <li className="flex justify-between items-center"><span className="text-slate-500">SYS_CONFIG (CS-312)</span> <ArrowRight className="w-4 h-4 text-slate-600"/> <span className="text-[var(--color-brand)]">OQ_SCRIPT (OQ-TF-01)</span></li>
-                    <li className="flex justify-between items-center"><span className="text-slate-500">RISK_CNTRL (RA-405)</span> <ArrowRight className="w-4 h-4 text-slate-600"/> <span className="text-[var(--color-brand)]">PQ_SCRIPT (PQ-TF-08)</span></li>
+                    <li className="flex justify-between items-center"><span className="text-slate-500">SYS_CONFIG (CS-312)</span> <ArrowRight className="w-4 h-4 text-slate-600"/> <span className="text-[#06B6D4]">OQ_SCRIPT (OQ-TF-01)</span></li>
+                    <li className="flex justify-between items-center"><span className="text-slate-500">RISK_CNTRL (RA-405)</span> <ArrowRight className="w-4 h-4 text-slate-600"/> <span className="text-[#06B6D4]">PQ_SCRIPT (PQ-TF-08)</span></li>
                   </ul>
                 </div>
               </motion.div>
@@ -661,13 +686,13 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                  </div>
                  <div className="relative">
                    <div className="absolute -left-[51px] top-2 w-5 h-5 bg-slate-800 rounded-full border-4 border-slate-900 flex items-center justify-center">
-                     <div className="w-2 h-2 bg-[var(--color-brand)] rounded-full"></div>
+                     <div className="w-2 h-2 bg-[#06B6D4] rounded-full"></div>
                    </div>
-                   <h5 className="font-bold text-2xl text-[var(--color-brand)]">3. Qualification Execution</h5>
+                   <h5 className="font-bold text-2xl text-[#06B6D4]">3. Qualification Execution</h5>
                    <p className="text-slate-400 mt-2 text-lg">Execute unscripted checks for low-risk vectors (CSA) and rigorous scripts for critical data integrity pathways.</p>
                  </div>
                  <div className="relative">
-                   <div className="absolute -left-[51px] top-2 w-5 h-5 bg-[var(--color-brand)] shadow-[0_0_15px_rgba(225,29,72,0.5)] rounded-full border-4 border-slate-900 flex items-center justify-center">
+                   <div className="absolute -left-[51px] top-2 w-5 h-5 bg-[#06B6D4] shadow-[0_0_15px_rgba(6,182,212,0.5)] rounded-full border-4 border-slate-900 flex items-center justify-center">
                    </div>
                    <h5 className="font-bold text-2xl text-white">4. Validation Summary (VSR)</h5>
                    <p className="text-slate-400 mt-2 text-lg">Provide cryptographically proven test executions and transition to continuous Quality Management.</p>
@@ -679,13 +704,13 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
 
         {/* Enterprise Experience Metrics Grid */}
         <section className="py-10 lg:py-24 bg-[#020617] text-white border-t border-slate-800 text-center relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[var(--color-brand-dim)]/10 to-transparent blur-3xl mix-blend-overlay"></div>
+           <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#06B6D4]/10 to-transparent blur-3xl mix-blend-overlay"></div>
            <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
-              <h3 className="text-sm font-bold text-[var(--color-brand)] uppercase tracking-widest mb-4">Enterprise Domain Expertise</h3>
+              <h3 className="text-sm font-bold text-[#06B6D4] uppercase tracking-widest mb-4">Enterprise Domain Expertise</h3>
               <h3 className="text-3xl md:text-5xl font-bold mb-16 tracking-tight">Systems Successfully Qualified</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                  {[
-                   { name: "ERP Systems", sys: "SAP S/4HANA, Oracle" },
+                   { name: "ERP Systems", sys: "Enterprise ERP, Oracle" },
                    { name: "eQMS", sys: "Veeva Vault, TrackWise" },
                    { name: "LIMS & ELN", sys: "LabVantage, Benchling" },
                    { name: "Clinical (eTMF)", sys: "Medidata, Veeva" },
@@ -695,7 +720,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                    { name: "BI / Analytics", sys: "Tableau, PowerBI" }
                  ].map((mod, i) => (
                    <div key={i} className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-xl p-8 hover:border-slate-600 hover:bg-slate-900 transition-all flex flex-col items-center justify-center group cursor-default">
-                      <div className="text-[var(--color-brand)] font-black text-xl mb-3 group-hover:scale-105 transition-transform text-center">{mod.name}</div>
+                      <div className="text-[#06B6D4] font-black text-xl mb-3 group-hover:scale-105 transition-transform text-center">{mod.name}</div>
                       <div className="text-slate-500 font-mono text-sm tracking-wide text-center">{mod.sys}</div>
                    </div>
                  ))}
@@ -717,7 +742,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
               <p className="text-xl text-slate-400 font-normal">A systematic, risk-aligned approach ensuring every milestone delivers verifiable compliance and operational value.</p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
               {methodology.map((col: any, idx: number) => (
                 <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: idx * 0.1 }} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 relative overflow-hidden group hover:border-[var(--color-brand)] transition-colors">
                   <div className="text-[120px] font-black text-slate-800/30 absolute -top-10 -right-4 z-0 pointer-events-none select-none group-hover:text-[var(--color-brand)]/10 transition-colors">
@@ -808,17 +833,17 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                   <h3 className="text-xl font-bold mb-10 text-slate-200">Trusted by Global Leaders to Validate:</h3>
                   <ul className="space-y-8">
                     <li className="flex items-start gap-4 group">
-                      <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 group-hover:bg-[var(--color-brand)] transition-colors border border-slate-700">
-                        <Database className="w-6 h-6 text-[var(--color-brand)] group-hover:text-white transition-colors" />
+                      <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 group-hover:bg-[#06B6D4] transition-colors border border-slate-700">
+                        <Database className="w-6 h-6 text-[#06B6D4] group-hover:text-white transition-colors" />
                       </div>
                       <div>
                         <h4 className="font-bold text-xl text-white mb-1">Tier-1 Cloud ERPs</h4>
-                        <p className="text-slate-400 text-sm leading-relaxed">SAP S/4HANA & Oracle Cloud powering critical global supply chains and batch releases.</p>
+                        <p className="text-slate-400 text-sm leading-relaxed">Enterprise ERP & Oracle Cloud powering critical global supply chains and batch releases.</p>
                       </div>
                     </li>
                     <li className="flex items-start gap-4 group">
-                      <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 group-hover:bg-[var(--color-brand)] transition-colors border border-slate-700">
-                        <Layers className="w-6 h-6 text-[var(--color-brand)] group-hover:text-white transition-colors" />
+                      <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 group-hover:bg-[#06B6D4] transition-colors border border-slate-700">
+                        <Layers className="w-6 h-6 text-[#06B6D4] group-hover:text-white transition-colors" />
                       </div>
                       <div>
                         <h4 className="font-bold text-xl text-white mb-1">Clinical Informatics</h4>
@@ -826,8 +851,8 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                       </div>
                     </li>
                     <li className="flex items-start gap-4 group">
-                      <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 group-hover:bg-[var(--color-brand)] transition-colors border border-slate-700">
-                        <Zap className="w-6 h-6 text-[var(--color-brand)] group-hover:text-white transition-colors" />
+                      <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 group-hover:bg-[#06B6D4] transition-colors border border-slate-700">
+                        <Zap className="w-6 h-6 text-[#06B6D4] group-hover:text-white transition-colors" />
                       </div>
                       <div>
                         <h4 className="font-bold text-xl text-white mb-1">Automated Delivery Pipelines</h4>
@@ -866,96 +891,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
 
       {renderCsvDeepDive()}
 
-      {/* Analytics and Data Visualization Section */}
-      <section className="py-10 lg:py-24 bg-slate-50 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-sm font-bold text-[var(--color-brand)] uppercase tracking-widest mb-4">Scalability & Analytics</h2>
-            <h3 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Performance Benchmarks</h3>
-            <p className="mt-6 text-xl text-slate-600 max-w-3xl mx-auto">Data-driven insights demonstrating our impact on operational efficiency, regulatory compliance, and overall system scalability.</p>
-          </div>
-          
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Area Chart for Growth/Efficiency */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <h4 className="text-xl font-bold text-slate-900 mb-6">Operational Efficiency vs Compliance Readiness</h4>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={[
-                    { name: 'Q1', efficiency: 65, compliance: 85 },
-                    { name: 'Q2', efficiency: 72, compliance: 88 },
-                    { name: 'Q3', efficiency: 86, compliance: 92 },
-                    { name: 'Q4', efficiency: 94, compliance: 98 },
-                  ]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorEfficiency" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#e11d48" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorCompliance" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0f172a" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }} />
-                    <Area type="monotone" dataKey="compliance" stroke="#0f172a" strokeWidth={3} fillOpacity={1} fill="url(#colorCompliance)" name="Compliance Score" />
-                    <Area type="monotone" dataKey="efficiency" stroke="#e11d48" strokeWidth={3} fillOpacity={1} fill="url(#colorEfficiency)" name="Efficiency Gains" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
 
-            {/* Bar or Pie Chart for Metric Distribution */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center h-full">
-              <h4 className="text-xl font-bold text-slate-900 mb-6 text-center">Business Value Distribution</h4>
-              <div className="h-[300px] w-full flex items-center justify-center">
-                 <ResponsiveContainer width="100%" height="100%">
-                   <PieChart>
-                     <Pie
-                       data={[
-                         { name: 'Cost Reduction', value: 45 },
-                         { name: 'Faster Time-to-Market', value: 30 },
-                         { name: 'Risk Mitigation', value: 25 },
-                       ]}
-                       cx="50%"
-                       cy="50%"
-                       innerRadius={80}
-                       outerRadius={110}
-                       paddingAngle={5}
-                       dataKey="value"
-                       stroke="none"
-                     >
-                       {[
-                         { name: 'Cost Reduction', value: 45 },
-                         { name: 'Faster Time-to-Market', value: 30 },
-                         { name: 'Risk Mitigation', value: 25 },
-                       ].map((entry, index) => (
-                         <Cell key={`cell-${index}`} fill={['#e11d48', '#0f172a', '#64748b'][index % 3]} />
-                       ))}
-                     </Pie>
-                     <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }} itemStyle={{color: '#0f172a', fontWeight: 'bold'}} />
-                   </PieChart>
-                 </ResponsiveContainer>
-              </div>
-              <div className="flex justify-center gap-6 mt-6">
-                 {[
-                   { name: 'Cost Reduction', value: 45 },
-                   { name: 'Faster Time-to-Market', value: 30 },
-                   { name: 'Risk Mitigation', value: 25 },
-                 ].map((item, idx) => (
-                   <div key={idx} className="flex items-center gap-2">
-                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: ['#e11d48', '#0f172a', '#64748b'][idx % 3] }}></div>
-                     <span className="text-sm text-slate-600 font-medium">{item.name}</span>
-                   </div>
-                 ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Case Studies / Proven Results */}
       {pageData.caseStudies && pageData.caseStudies.length > 0 && (
@@ -966,7 +902,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
               <h3 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight text-gray-900">What we've done.</h3>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {pageData.caseStudies.map((study: any, idx: number) => (
                 <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: idx * 0.1 }} className="bg-gray-50 rounded-2xl p-8 lg:p-12 border border-gray-200">
                   <div className="inline-flex items-center gap-2 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded mb-8 uppercase tracking-wider">
@@ -996,21 +932,34 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
       {renderMethodology()}
 
       {/* FAQ Section */}
-      {pageData.faqs && pageData.faqs.length > 0 && (
-        <section className="py-10 lg:py-24 px-6 lg:px-8 bg-white border-b border-gray-200">
-           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-sm font-bold text-[var(--color-brand)] uppercase tracking-widest mb-4">Have Questions?</h2>
-              <h3 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">Frequently Asked Questions</h3>
-            </div>
-            <div className="bg-white rounded-2xl">
-              {pageData.faqs.map((faq: any, idx: number) => (
-                <FAQItem key={idx} question={faq.question} answer={faq.answer} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <div className="relative z-10 bg-white">
+        <FAQSection 
+          title={`FAQs on ${pageData.title}`}
+          subtitle="Explore our comprehensive compliance and validation expertise."
+          faqs={pageData.faqs && pageData.faqs.length > 0 ? pageData.faqs : [
+            {
+              question: `Why choose Dromominds for ${pageData.title}?`,
+              answer: `Our dedicated experts leverage modern methodologies like Computer Software Assurance (CSA) to accelerate your ${pageData.title} initiatives. We replace slow, paper-based routines with automated, risk-based frameworks that drastically reduce go-live times and compliance overhead.`
+            },
+            {
+              question: `Are your ${pageData.title} services compliant with FDA and EU regulations?`,
+              answer: "Yes, our validation pipelines and engineering protocols are natively mapped to FDA 21 CFR Part 11, EU Annex 11, ISO standards, and GAMP 5 Second Edition. We guarantee audit-readiness across global jurisdictions."
+            },
+            {
+              question: "How do you handle data integrity and ALCOA+?",
+              answer: "We perform deep infrastructural reviews to ensure non-repudiation and lifecycle governance across digital and physical data records. Our processes are designed to strictly enforce ALCOA+ principles and eliminate vulnerabilities."
+            },
+            {
+              question: "Do you support cloud (SaaS/PaaS) environments?",
+              answer: "Absolutely. We specialize in providing end-to-end continuous validation for multi-tenant cloud environments like Veeva and Salesforce, ensuring a validated state even through rapid vendor release cycles."
+            },
+            {
+              question: "What is the typical timeline for an engagement?",
+              answer: "Timelines vary depending on project complexity and scope. However, by utilizing our proprietary continuous validation pipelines and CSA methodology, we typically reduce overall validation and execution overhead by up to 40% compared to legacy approaches."
+            }
+          ]}
+        />
+      </div>
 
       {/* Funnel-Driven Call To Action */}
       <section className="py-10 lg:py-24 px-6 bg-slate-50 border-t border-gray-200">
@@ -1033,7 +982,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
               </div>
               
               <div className="relative z-10 mt-auto pt-8 border-t border-slate-800">
-                <Link to="/contact" className="w-full bg-[var(--color-brand)] text-white px-8 py-5 rounded-xl font-bold hover:bg-rose-600 transition-all duration-300 flex items-center justify-between text-lg group shadow-lg shadow-[var(--color-brand)]/20">
+                <Link to="/contact" className="w-full bg-[var(--color-brand)] text-white px-8 py-5 rounded-xl font-bold hover:bg-[#07162B] transition-all duration-300 flex items-center justify-between text-lg group shadow-lg shadow-[var(--color-brand)]/20">
                   Schedule Your Executive Audit <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <div className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400 font-medium">
@@ -1052,7 +1001,7 @@ export const ServicePage = ({ overrideId }: { overrideId?: string }) => {
                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-widest rounded mb-6 border border-gray-200">
                     <Database className="w-4 h-4" /> Executive Resource
                  </div>
-                 <h3 className="text-2xl md:text-4xl font-black text-slate-900 mb-6 tracking-tight">Not ready to engage? <br/>Download the playbook.</h3>
+                 <h3 className="text-2xl md:text-4xl font-black text-slate-900 mb-6 tracking-tight">Not ready to engage? <br/>Get the playbook.</h3>
                  <p className="text-slate-600 mb-8 text-lg leading-relaxed font-light">
                    Get our "2026 Management Blueprint for {pageData.title}" detailing precisely how we engineer scalable frameworks, automate validation, and slash operational overhead.
                  </p>

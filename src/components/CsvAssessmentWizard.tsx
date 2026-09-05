@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronRight, ChevronLeft, ShieldCheck, Activity, Target, Download, Mail, Calendar, CheckCircle2, AlertTriangle, AlertCircle, FileText, Server } from 'lucide-react';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { assessmentCategories, answerOptions, getStatusFromScore } from '../data/assessmentData';
+import { assessmentCategories as localCategories, answerOptions, getStatusFromScore } from '../data/assessmentData';
+import { sanityClient } from '../lib/sanity';
 
 interface CsvAssessmentWizardProps {
   isOpen: boolean;
@@ -10,7 +11,17 @@ interface CsvAssessmentWizardProps {
 }
 
 export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProps) => {
+  const [assessmentCategories, setAssessmentCategories] = useState(localCategories);
   const [currentStep, setCurrentStep] = useState(0); // 0-6: Categories, 7: Calculating, 8: Results
+  
+  useEffect(() => {
+    sanityClient.fetch(`*[_type == "assessmentCategory"] | order(order asc)`).then(data => {
+      if (data && data.length > 0) {
+        setAssessmentCategories(data);
+      }
+    }).catch(console.error);
+  }, []);
+
   const [answers, setAnswers] = useState<Record<string, number>>(() => {
     try {
       const saved = localStorage.getItem('csvAssessmentAnswers');
@@ -47,21 +58,21 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
   };
 
   const isCurrentCategoryComplete = () => {
-    if (currentStep > 6) return true;
+    if (currentStep >= assessmentCategories.length) return true;
     const category = assessmentCategories[currentStep];
-    return category.questions.every(q => answers[q.id] !== undefined);
+    return category.questions.every((q: any) => answers[q.id] !== undefined);
   };
 
   const handleNext = () => {
-    if (currentStep < 6) {
+    if (currentStep < assessmentCategories.length - 1) {
       setCurrentStep(prev => prev + 1);
       setTimeout(() => contentRef.current?.scrollTo(0, 0), 10);
-    } else if (currentStep === 6) {
-      setCurrentStep(7);
+    } else if (currentStep === assessmentCategories.length - 1) {
+      setCurrentStep(assessmentCategories.length);
       setIsCalculating(true);
       setTimeout(() => {
         setIsCalculating(false);
-        setCurrentStep(8);
+        setCurrentStep(assessmentCategories.length + 1);
         setTimeout(() => contentRef.current?.scrollTo(0, 0), 10);
       }, 3000);
     }
@@ -104,13 +115,13 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
   };
 
   const renderProgress = () => {
-    if (currentStep > 6) return null;
-    const progress = ((currentStep) / 7) * 100;
-    const initialProgress = Math.max(0, ((currentStep-1) / 7) * 100);
+    if (currentStep >= assessmentCategories.length) return null;
+    const progress = ((currentStep) / assessmentCategories.length) * 100;
+    const initialProgress = Math.max(0, ((currentStep-1) / assessmentCategories.length) * 100);
     return (
       <div className="w-full bg-slate-800 h-2 mt-4 rounded-full overflow-hidden">
         <motion.div 
-          className="h-full bg-gradient-to-r from-red-500 to-[var(--color-brand)]"
+          className="h-full bg-gradient-to-r from-[#0B1F3A] via-[#1D4ED8] to-[#06B6D4]"
           initial={{ width: `${initialProgress}%` }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.3 }}
@@ -129,7 +140,7 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
         className="space-y-8"
       >
         <div className="mb-8">
-          <h2 className="text-sm font-bold text-[var(--color-brand)] uppercase tracking-widest mb-2">Category {currentStep + 1} of 7</h2>
+          <h2 className="text-sm font-bold text-[var(--color-brand)] uppercase tracking-widest mb-2">Category {currentStep + 1} of {assessmentCategories.length}</h2>
           <h3 className="text-2xl md:text-3xl font-serif font-bold text-white">{category.title}</h3>
         </div>
 
@@ -143,7 +154,7 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
                   </span>
                   {q.text}
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {answerOptions.map(opt => (
                     <button
                       key={opt.value}
@@ -177,7 +188,7 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
             disabled={!isCurrentCategoryComplete()}
             className="bg-[var(--color-brand)] text-white px-8 py-3 rounded-lg font-bold hover:bg-[var(--color-brand-hover)] transition-all flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {currentStep === 6 ? 'Calculate Score' : 'Next Category'} <ChevronRight className="w-5 h-5" />
+            {currentStep === assessmentCategories.length - 1 ? 'Calculate Score' : 'Next Category'} <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </motion.div>
@@ -364,7 +375,7 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
           
           <div className="text-center max-w-2xl mx-auto mb-8 relative z-10">
             <h3 className="text-2xl font-serif font-bold text-white mb-3">Receive Your Detailed Executive Report</h3>
-            <p className="text-slate-400">Download a comprehensive PDF detailing your maturity profile, detailed gap analysis, and a structured remediation roadmap.</p>
+            <p className="text-slate-400">Get a comprehensive PDF detailing your maturity profile, detailed gap analysis, and a structured remediation roadmap sent to your inbox.</p>
           </div>
 
           <form onSubmit={(e) => {
@@ -403,7 +414,7 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <button disabled={formStatus === 'submitting' || formStatus === 'success'} type="submit" className="bg-[var(--color-brand)] text-white px-8 py-4 rounded-xl font-bold hover:bg-[var(--color-brand-hover)] transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50">
-                {formStatus === 'submitting' ? 'Processing...' : <><Download className="w-5 h-5" /> Download Full PDF Report</>}
+                {formStatus === 'submitting' ? 'Processing...' : <><Download className="w-5 h-5" /> Get Full PDF Report</>}
               </button>
               <button type="button" onClick={onClose} className="bg-slate-800 text-white border border-slate-700 px-8 py-4 rounded-xl font-bold hover:bg-slate-700 transition flex items-center justify-center gap-2">
                 <Calendar className="w-5 h-5" /> Book Consultation
@@ -452,17 +463,17 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
                 <div className="text-[var(--color-brand)] text-xs font-bold tracking-widest uppercase">Enterprise Assessment</div>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition-colors">
+            <button onClick={onClose} aria-label="Close modal" className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Progress Bar (if answering questions) */}
-          {currentStep <= 6 && (
+          {currentStep < assessmentCategories.length && (
              <div className="px-6 pt-6 shrink-0">
                <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">
                  <span>Progress</span>
-                 <span>{Math.round(((currentStep) / 7) * 100)}%</span>
+                 <span>{Math.round(((currentStep) / assessmentCategories.length) * 100)}%</span>
                </div>
                {renderProgress()}
              </div>
@@ -470,9 +481,9 @@ export const CsvAssessmentWizard = ({ isOpen, onClose }: CsvAssessmentWizardProp
 
           {/* Content Area */}
           <div ref={contentRef} className="p-6 md:p-10 overflow-y-auto flex-1 custom-scrollbar">
-            {currentStep <= 6 && renderQuestions()}
-            {currentStep === 7 && renderCalculating()}
-            {currentStep === 8 && renderResults()}
+            {currentStep < assessmentCategories.length && renderQuestions()}
+            {currentStep === assessmentCategories.length && renderCalculating()}
+            {currentStep === assessmentCategories.length + 1 && renderResults()}
           </div>
           
         </div>

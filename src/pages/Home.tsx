@@ -47,3 +47,6 @@ export const Home = ({ onOpenLeadMagnet }: HomeProps) => {
     </>
   );
 };
+
+export default Home;
+

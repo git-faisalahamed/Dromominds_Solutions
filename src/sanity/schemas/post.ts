@@ -23,6 +23,19 @@ export default {
       type: 'string',
     },
     {
+      name: 'authorType',
+      title: 'Author Type',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Guests', value: 'Guests' },
+          { title: 'Members', value: 'Members' },
+          { title: 'Consultant', value: 'Consultant' }
+        ],
+        layout: 'radio'
+      }
+    },
+    {
       name: 'mainImage',
       title: 'Main Image',
       type: 'image',

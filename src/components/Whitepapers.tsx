@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, FileText, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowRight, FileText, Download, User } from 'lucide-react';
+import { PrefetchLink as Link } from './PrefetchLink';
 import { blogPosts, BlogPost } from '../data/blogPosts';
 import { sanityClient, urlFor } from '../lib/sanity';
 
@@ -18,7 +18,8 @@ export const Whitepapers = () => {
           excerpt,
           mainImage,
           publishedAt,
-          author
+          author,
+          authorType
         }`;
         const whitepapersQuery = `*[_type == "whitepaper"] | order(_createdAt desc)[0...1] {
           _type,
@@ -27,7 +28,9 @@ export const Whitepapers = () => {
           image,
           type,
           downloadLink,
-          _createdAt
+          _createdAt,
+          author,
+          authorType
         }`;
         
         const [sanityPosts, sanityWhitepapers] = await Promise.all([
@@ -44,9 +47,11 @@ export const Whitepapers = () => {
              title: wp.title || 'Untitled Whitepaper',
              url: wp.downloadLink || '#',
              excerpt: wp.description || '',
-             coverImage: wp.image ? urlFor(wp.image).url() : 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80',
+             coverImage: wp.image ? urlFor(wp.image).width(800).url() : 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80',
              date: wp._createdAt,
-             category: wp.type || 'Whitepaper'
+             category: wp.type || 'Whitepaper',
+             author: wp.author,
+             authorType: wp.authorType
            });
         }
 
@@ -56,9 +61,10 @@ export const Whitepapers = () => {
              title: p.title || 'Untitled',
              slug: p.slug?.current || '',
              excerpt: p.excerpt || '',
-             coverImage: p.mainImage ? urlFor(p.mainImage).url() : 'https://images.unsplash.com/photo-1542382257-80dedb725088?w=1600&q=80',
+             coverImage: p.mainImage ? urlFor(p.mainImage).width(800).url() : 'https://images.unsplash.com/photo-1542382257-80dedb725088?w=1600&q=80',
              date: p.publishedAt || new Date().toISOString(),
-             author: { name: p.author || 'Author', role: '', image: '' },
+             author: p.author || 'Author',
+             authorType: p.authorType,
              category: 'Insight', // You could add logic to pull this from Sanity if you extend the schema
              content: '',
              readTime: '5 min read'
@@ -95,17 +101,17 @@ export const Whitepapers = () => {
         </div>
 
         {loading ? (
-          <div className="flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-6 pb-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-4">
             {[1, 2, 3].map((_, idx) => (
-               <div key={idx} className="min-w-[85vw] snap-center md:min-w-0 bg-gray-100 rounded-2xl h-96 animate-pulse" />
+               <div key={idx} className="bg-gray-100 rounded-2xl h-96 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-6 pb-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-4">
             {posts.map((post, idx) => {
               if (post._type === 'whitepaper') {
                 return (
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" key={idx} className="min-w-[85vw] snap-center md:min-w-0 group cursor-pointer bg-slate-900 rounded-2xl overflow-hidden shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-300 flex flex-col h-full transform hover:-translate-y-2 relative border border-[var(--color-brand)]">
+                  <a href={post.url} target="_blank" rel="noopener noreferrer" key={idx} className="group cursor-pointer bg-slate-900 rounded-2xl overflow-hidden shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-300 flex flex-col h-full transform hover:-translate-y-2 relative border border-[var(--color-brand)]">
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
                       <FileText className="w-32 h-32 text-[var(--color-brand)]" />
                     </div>
@@ -118,9 +124,22 @@ export const Whitepapers = () => {
                     </div>
                     <div className="p-6 flex flex-col flex-grow relative z-10">
                       <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[var(--color-brand)] transition-colors">{post.title}</h3>
-                      <p className="text-gray-400 text-sm font-light flex-grow line-clamp-3 mb-6">{post.excerpt}</p>
+                      <p className="text-gray-400 text-sm font-light flex-grow line-clamp-3 mb-4">{post.excerpt}</p>
+                      
+                      {post.author && (
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+                            <User className="w-3 h-3" />
+                          </div>
+                          <div className="flex flex-col">
+                             <span className="text-xs font-bold text-white">{post.author}</span>
+                             {post.authorType && <span className="text-[10px] text-[var(--color-brand)] uppercase tracking-wider">{post.authorType}</span>}
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="border-t border-slate-800 pt-4 flex justify-between items-center">
-                        <span className="text-[var(--color-brand)] font-bold text-sm uppercase tracking-widest group-hover:text-white transition-colors">Download PDF</span>
+                        <span className="text-[var(--color-brand)] font-bold text-sm uppercase tracking-widest group-hover:text-white transition-colors">Get PDF</span>
                         <div className="w-10 h-10 rounded-full bg-[var(--color-brand)]/20 flex items-center justify-center group-hover:bg-[var(--color-brand)] transition-colors text-[var(--color-brand)] group-hover:text-white">
                           <Download className="w-4 h-4" />
                         </div>
@@ -131,7 +150,7 @@ export const Whitepapers = () => {
               }
               
               return (
-                <Link to={`/blog/${post.slug}`} key={idx} className="min-w-[85vw] snap-center md:min-w-0 group cursor-pointer bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col h-full block">
+                <Link to={`/blog/${post.slug}`} key={idx} className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col h-full block">
                   <div className="h-48 relative flex items-center justify-center overflow-hidden">
                      <img loading="lazy" src={post.coverImage} alt={post.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                      <div className="absolute inset-0 bg-slate-900/40 group-hover:bg-slate-900/20 transition-colors" />
@@ -142,9 +161,21 @@ export const Whitepapers = () => {
                       {post.date ? new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-[var(--color-brand)] transition-colors line-clamp-2">{post.title}</h3>
-                    <p className="text-gray-600 text-sm font-light flex-grow line-clamp-3">{post.excerpt}</p>
+                    <p className="text-gray-600 text-sm font-light flex-grow line-clamp-3 mb-4">{post.excerpt}</p>
                     
-                    <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center text-[var(--color-brand)] font-semibold text-sm">
+                    {post.author && (
+                       <div className="flex items-center gap-2 mb-2">
+                         <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                           <User className="w-3 h-3" />
+                         </div>
+                         <div className="flex flex-col">
+                            <span className="text-xs font-bold text-slate-900">{typeof post.author === 'string' ? post.author : post.author.name}</span>
+                            {post.authorType && <span className="text-[10px] text-[var(--color-brand)] uppercase tracking-wider">{post.authorType}</span>}
+                         </div>
+                       </div>
+                    )}
+
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-[var(--color-brand)] font-semibold text-sm">
                       Read Article <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 group-hover:text-[var(--color-brand)] transition-all" />
                     </div>
                   </div>

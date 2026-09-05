@@ -52,7 +52,7 @@ export const Testimonials = () => {
           company: item.authorCompany,
           name: item.authorName,
           role: item.authorRole,
-          image: item.authorImage ? urlFor(item.authorImage).url() : null,
+          image: item.authorImage ? urlFor(item.authorImage).width(150).url() : null,
           icon: Globe // Fallback icon
         })));
       } else {

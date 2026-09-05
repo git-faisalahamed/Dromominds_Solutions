@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { sanityClient, urlFor } from '../lib/sanity';
 
 interface SEOProps {
   title?: string;
@@ -14,9 +15,18 @@ export function SEO({
   description = "Providing structured validation, qualification, and regulatory support services aligned with global GxP, FDA, and ISO requirements.",
   keywords = "GxP, FDA compliance, ISO, validation, regulatory support, quality management",
   url = "https://dromominds.in",
-  image = "https://dromominds.in/wp-content/uploads/2025/09/logo2.png",
+  image = "/logo-day.png",
 }: SEOProps) {
   const fullTitle = title === "Dromominds Solutions" ? title : `${title} | Dromominds Solutions`;
+  const [favicon, setFavicon] = useState<string | null>(null);
+
+  useEffect(() => {
+    sanityClient.fetch(`*[_type == "siteSettings"][0]{ favicon }`).then((data) => {
+      if (data?.favicon) {
+        setFavicon(urlFor(data.favicon).width(64).url());
+      }
+    }).catch(console.error);
+  }, []);
 
   return (
     <Helmet>
@@ -24,6 +34,9 @@ export function SEO({
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       <link rel="canonical" href={url} />
+      
+      {favicon && <link rel="icon" href={favicon} />}
+      {favicon && <link rel="apple-touch-icon" href={favicon} />}
 
       {/* Open Graph */}
       <meta property="og:title" content={fullTitle} />

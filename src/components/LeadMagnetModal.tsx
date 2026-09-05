@@ -34,16 +34,20 @@ export const LeadMagnetModal = ({ isOpen, onClose }: LeadMagnetModalProps) => {
     setStatus('idle');
 
     try {
-      const response = await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("https://script.google.com/macros/s/AKfycbzg74_LvtolYXjTCMYQG3oNPg8U29N3J55z4ZChRzp3A-MByIztt-hsPJL9ui09VP13/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
         body: JSON.stringify({
-          ...formData,
-          resourceName: "The Executive 'CSV to CSA' Transition Kit"
-        }),
+          firstName: formData.firstName,
+          email: formData.email,
+          company: formData.company
+        })
       });
 
-      if (response.ok) {
+      if (response.ok || response.type === 'opaque') {
         setStatus('success');
       } else {
         setStatus('error');
@@ -54,13 +58,6 @@ export const LeadMagnetModal = ({ isOpen, onClose }: LeadMagnetModalProps) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDownloadClick = () => {
-    // In a real app, this would trigger the actual PDF download
-    // For now, we simulate success and automatically close after a few seconds
-    window.open("https://dromominds.in/wp-content/uploads/2025/09/logo2.png", "_blank");
-    setTimeout(onClose, 2000);
   };
 
   return (
@@ -87,6 +84,7 @@ export const LeadMagnetModal = ({ isOpen, onClose }: LeadMagnetModalProps) => {
             {/* Close Button */}
             <button
               onClick={onClose}
+              aria-label="Close modal"
               className="absolute top-4 right-4 z-20 p-2 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 md:text-gray-400 md:hover:text-gray-900 dark:md:hover:text-white md:bg-gray-100/50 md:hover:bg-gray-100 dark:md:bg-slate-800/50 dark:md:hover:bg-slate-800 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
@@ -152,20 +150,13 @@ export const LeadMagnetModal = ({ isOpen, onClose }: LeadMagnetModalProps) => {
                     className="text-center"
                   >
                     <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Download className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">You're all set!</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Thank you!</h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-8 border-b border-gray-100 dark:border-slate-800 pb-8">
-                      Your transition kit is ready. A backup copy has also been sent to your email.
+                      Your request has been received. The checklist will be sent to your email shortly.
                     </p>
-                    <button 
-                      onClick={handleDownloadClick}
-                      className="w-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-6 py-4 rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                    >
-                      <FileText className="w-5 h-5" />
-                      Download PDF Kit Now
-                    </button>
-                    <button onClick={onClose} className="mt-4 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
+                    <button onClick={onClose} className="w-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-6 py-4 rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
                       Close Window
                     </button>
                   </motion.div>
@@ -231,7 +222,7 @@ export const LeadMagnetModal = ({ isOpen, onClose }: LeadMagnetModalProps) => {
                       </button>
                       
                       <p className="text-[11px] text-gray-400 dark:text-gray-500 text-center mt-4">
-                        By downloading, you agree to our privacy policy and to receive occasional industry insights. You can unsubscribe anytime.
+                        By submitting, you agree to our privacy policy and to receive occasional industry insights. You can unsubscribe anytime.
                       </p>
                     </form>
                   </>

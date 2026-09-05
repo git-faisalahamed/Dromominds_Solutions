@@ -1,6 +1,6 @@
 export default {
-  name: 'whitepaper',
-  title: 'Whitepaper',
+  name: 'news',
+  title: 'News & Events',
   type: 'document',
   fields: [
     {
@@ -9,9 +9,19 @@ export default {
       type: 'string',
     },
     {
-      name: 'description',
-      title: 'Description',
+      name: 'excerpt',
+      title: 'Excerpt',
       type: 'text',
+    },
+    {
+      name: 'category',
+      title: 'Category',
+      type: 'string',
+    },
+    {
+      name: 'publishedAt',
+      title: 'Published At',
+      type: 'datetime',
     },
     {
       name: 'image',
@@ -19,13 +29,13 @@ export default {
       type: 'image',
     },
     {
-      name: 'type',
-      title: 'Type (e.g., Template, Framework, Case Study)',
-      type: 'string',
+      name: 'featured',
+      title: 'Featured',
+      type: 'boolean',
     },
     {
-      name: 'downloadLink',
-      title: 'Download Link',
+      name: 'readTime',
+      title: 'Read Time',
       type: 'string',
     },
     {
